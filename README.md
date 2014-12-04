@@ -16,6 +16,20 @@ Just a few stuartsierra system definition examples to play with :)
 ```
 
 
+## Recomended usage
+
+Declare this dependency in your project.clj in :profiles :dev section
+```clojure 
+:profiles {:dev {:dependencies [[milesian/system-examples "0.1.1-SNAPSHOT"]]}}
+```
+If you are using repl
+```clojure
+REPL> (in-ns 'the-ns-where-you-are-currently-working)
+the-ns-you-are-currently-working> (use 'milesian.system-examples)
+the-ns-you-are-currently-working> (new-system-map)
+;;=> #milesian.system_examples.System1{:a #milesian.system_examples.ComponentA{:state {:state "state :a: 5404919"}}, :b #milesian.system_examples.ComponentB{:state "state :b: 158819547", :a nil}, :c #milesian.system_examples.ComponentC{:state "state :c: 1596205639", :a nil, :b nil}}
+
+```
 
 ## License
 
