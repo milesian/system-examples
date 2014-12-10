@@ -1,4 +1,4 @@
-(defproject milesian/system-examples "0.1.1-SNAPSHOT"
+(defproject milesian/system-examples "0.1.2-SNAPSHOT"
   :description "Just a few stuartsierra system definition examples to play with :)"
   :url "https://github.com/milesian/system-examples"
   :license {:name "MIT License"
