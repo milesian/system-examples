@@ -20,7 +20,7 @@ Just a few stuartsierra system definition examples to play with :)
 
 Declare this dependency in your project.clj in :profiles :dev section
 ```clojure 
-:profiles {:dev {:dependencies [[milesian/system-examples "0.1.1-SNAPSHOT"]]}}
+:profiles {:dev {:dependencies [[milesian/system-examples "0.1.1"]]}}
 ```
 If you are using repl
 ```clojure
