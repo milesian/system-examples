@@ -1,5 +1,38 @@
 (ns milesian.system-examples
-  (:require [com.stuartsierra.component :as component]))
+  (:require [com.stuartsierra.component :as component]
+            [plumbing.core :refer (fnk sum)]
+            [plumbing.graph :as graph]))
+
+(defprotocol Sing
+  (singing [_ song]))
+
+(def stats-graph
+  "A graph specifying the same computation as 'stats'"
+  {:n  (fnk [xs]
+            (println :n)
+            (count xs))
+   :m  (fnk [xs n]
+            (println :m)
+            (/ (sum identity xs) n))
+   :m2 (fnk [xs n]
+            (println :m2)
+            (/ (sum #(* % %) xs) n))
+   :v  (fnk [m m2]
+            (println :v)
+            (- m2 (* m m)))})
+
+(def stats-eager (graph/compile stats-graph))
+
+(def singing-g
+  "A graph specifying the same computation as 'stats'"
+  {:sing  (fnk [lyrics]
+               (-> lyrics clojure.string/upper-case seq))})
+
+(def p-singing
+  (reify Sing
+   (singing [this song]
+     (:sing ((graph/compile singing-g) {:lyrics song}))
+     )))
 
 (defn- create-state [k]
   {:state (str "state " k ": "  (rand-int Integer/MAX_VALUE))})
@@ -10,14 +43,33 @@
 (defprotocol Talk
   (talking [_]))
 
-(defrecord ComponentA [state]
+(defrecord ComponentA [state g s-g]
   component/Lifecycle
   (start [this]
-    this)
-  (stop [this]
-    this))
+    (println "starting A")
+    (let [i (assoc this
+             :g (graph/compile g)
+             :s-g (graph/compile s-g))]
+      (extend (type this)
+        Sing
+        {:singing (fn [this song]
+                    (:sing ((-> this :s-g) {:lyrics (str "guau!!! " song)})))
 
-(defn component-a [] (->ComponentA (create-state :a)))
+         })
+      #_(reify Sing
+        (singing [this song]
+          (:sing ((-> i :s-g) {:lyrics song})))
+        )
+      i
+
+      ))
+  (stop [this]
+    this)
+
+
+  )
+
+(defn component-a [] (map->ComponentA  {:state "juan" :g stats-graph :s-g singing-g}))
 
 (defrecord ComponentB [state a]
   component/Lifecycle
@@ -43,8 +95,14 @@
 (defrecord System1 [a b c])
 
 (defn new-system-map []
-  (map->System1 {:a (-> (component-a))
-                 :b (-> (component-b)
-                        (component/using [:a]))
-                 :c (-> (component-c)
-                        (component/using [:a :b]))}))
+  (component/system-map :a (-> (component-a))
+                        :b (-> (component-b)
+                               (component/using [:a]))
+                        :c (-> (component-c)
+                               (component/using [:a :b]))))
+(def s (component/start (new-system-map)))
+
+(time (-> s :a (singing "la ala la ")) )
+(assert  (satisfies? Sing p-singing))
+(assert  (satisfies? Sing (-> s :a)))
+;(singing p-singing "hola")
